@@ -6,7 +6,7 @@ networkCanvas.width=300;
 const carCtx = carCanvas.getContext("2d");
 const networkCtx = networkCanvas.getContext("2d");
 
-const road=new Road(carCanvas.width/2,carCanvas.width*0.9);
+const road=new Road(carCanvas.width/2,carCanvas.width*0.9 , 4);
 
 const N=100;
 const cars=generateCars(N);
@@ -16,10 +16,41 @@ if(localStorage.getItem("bestBrain")){
         cars[i].brain=JSON.parse(
             localStorage.getItem("bestBrain"));
         if(i!=0){
-            NeuralNetwork.mutate(cars[i].brain,0.2);
+            NeuralNetwork.mutate(cars[i].brain,0.1);
         }
     }
 }
+var  paused = false;
+
+$(document).keypress(function(e){
+    if(e.which == 80){
+        $('#pause').click();
+    }
+});
+$(document).keypress(function(e){
+    if(e.which == 79){
+        $('#continue').click();
+    }
+});
+$(document).keypress(function(e){
+    if(e.which == 83){
+        $('#save').click();
+    }
+});
+$(document).keypress(function(e){
+    if(e.which == 68){
+        $('#discard').click();
+    }
+});
+
+$('#pause').on('click' , function(){
+    paused = true;
+});
+
+$('#continue').on('click' , function(){
+    paused = false;
+    requestAnimationFrame(animate);
+})
 
 const traffic=[
     new Car(road.getLaneCenter(1),-100,30,50,"DUMMY",2,getRandomColor()),
@@ -31,7 +62,7 @@ const traffic=[
     new Car(road.getLaneCenter(2),-700,30,50,"DUMMY",2,getRandomColor()),
 ];
 
-animate();
+animate();  
 
 function save(){
     localStorage.setItem("bestBrain",
@@ -51,6 +82,8 @@ function generateCars(N){
 }
 
 function animate(time){
+    if(paused){return ;}
+
     for(let i=0;i<traffic.length;i++){
         traffic[i].update(road.borders,[]);
     }
@@ -80,6 +113,8 @@ function animate(time){
     bestCar.draw(carCtx,true);
 
     carCtx.restore();
+
+
 
     networkCtx.lineDashOffset=-time/50;
     Visualizer.drawNetwork(networkCtx,bestCar.brain);
